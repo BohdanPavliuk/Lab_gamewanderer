@@ -1,17 +1,16 @@
 """Module of game classes"""
 
 class Street:
-
     trigered = True
-
-    def __init__(self, name, trigered = False):
+    def __init__(self, name, action = []):
         self.item = None
         self.character = None
         self.name = name
         self.direction = {}
         self.items_name = []
         self.items = []
-        self.trigered = trigered
+        self.action = action
+        self.trigered = False
 
     def __repr__(self):
         return self.name
@@ -39,7 +38,7 @@ class Street:
         return self.direction[way]
 
     def change_trigered(self):
-        Street.trigered = self.trigered
+        self.trigered = Street.trigered
     
     def get_details(self):
         print(f'{self.name}')
@@ -55,23 +54,32 @@ class Street:
 class Character:
 
 
-    def __init__(self, name, description, action = False):
+    def __init__(self, name, description, action = False, trigered = False):
         self.name = name
         self.description = description
         self.action = action
+        self.trigered = trigered
 
     def set_choose(self, dct):
         self.choose = dct
 
+    def set_requered(self, item):
+        self.requered = item
+
     def action_char(self, backpack):
+        self.talk()
         while True:
             print(f"You can choose between {[i for i in self.choose]}")
             your_choose = input()
             if your_choose in self.choose:
+                if self.choose[your_choose][1] and not self.requered in backpack:
+                    print(f'У вас немає {self.requered} в рюкзаку')
+                    your_choose = 'No'
                 print(f"[{self.name} says]: {self.choose[your_choose][0]}")
-                if self.choose[your_choose][1]:
+                if self.choose[your_choose][2]:
                     print(f"Ви отримали {self.item}")
-                    backpack.append(self.item)
+                    if self.item not in backpack:
+                        backpack.append(self.item.name)
                 return backpack
             else:
                 print('Ви не можете це вибрати. Спробуйте ще раз')
@@ -94,9 +102,6 @@ class Character:
     
     def set_item(self, item):
         self.item = item
-
-    def trigered(self):
-        return Street.trigered
 
     def talk(self):
         print(f"[{self.name} says]: {self.speech}")
@@ -137,7 +142,17 @@ class Support(Item):
         self.health_boost = health_boost
 
 class Enemy(Character):
-    def __init__(self, name, description, health, damage):
-        super().__init__(name, description)
+    def __init__(self, name, description, action = False, trigered = False, item = None, health = 0, damage = 0):
+        super().__init__(name, description, action, trigered)
         self.damage = damage
         self.health = health
+        self.steal = item
+    
+    def fight(self, item):
+        if item in self.weakness:
+            return True
+        return False
+
+if __name__ == '__main__':
+    cls = Enemy('da', 'dawdw')
+    print(isinstance(cls, Enemy))
